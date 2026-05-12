@@ -56,8 +56,8 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
       <Divider sx={{ mb: 2 }} />
 
       {/* Chart Type Selector */}
-      <FormControl fullWidth sx={{ mb: 3 }}>
-        <InputLabel>Chart Type</InputLabel>
+      <FormControl fullWidth sx={{ mb: 1 }}>        
+        <Typography variant="subtitle2" sx={{ mb: 1 }}>Chart Type</Typography>
         <Select value={chartType} onChange={(e) => onChartTypeChange(e.target.value as WidgetConfig['type'])}>
           {Object.entries(WIDGET_REGISTRY).map(([key, meta]) => (
             <MenuItem key={key} value={key}>
@@ -119,8 +119,8 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
               onChange={(e) => setFilterForm({ ...filterForm, field: e.target.value })}
               fullWidth
             />
-            <FormControl fullWidth>
-              <InputLabel>Operator</InputLabel>
+            <FormControl fullWidth>              
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>Operator</Typography>
               <Select
                 value={filterForm.operator}
                 onChange={(e) => setFilterForm({ ...filterForm, operator: e.target.value as any })}
