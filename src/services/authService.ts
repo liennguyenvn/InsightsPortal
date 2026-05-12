@@ -23,16 +23,24 @@ const generateFakeToken = (user: User): string => {
   return btoa(JSON.stringify(payload));
 };
 
+// Valid credentials
+const VALID_EMAIL = 'vn.liennguyen@gmail.com';
+const VALID_PASSWORD = '1234567';
+
 export const authService = {
   login: async (email: string, password: string): Promise<AuthResponse> => {
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    // Any email/password combination succeeds (mockup mode)
+    // Validate credentials
+    if (email !== VALID_EMAIL || password !== VALID_PASSWORD) {
+      throw new Error('Invalid email or password');
+    }
+
     const user: User = {
       id: 'user_' + Date.now(),
       email,
-      name: email.split('@')[0] || 'David',
+      name: 'Liên Nguyễn',
       role: 'Admin',
     };
 

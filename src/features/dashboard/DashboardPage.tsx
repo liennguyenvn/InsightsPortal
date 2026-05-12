@@ -81,36 +81,40 @@ export const DashboardPage: React.FC = () => {
       {/* KPI Cards Row */}
       <KPICardsRow metrics={kpiMetrics} />
 
-      {/* Charts Grid */}
+      {/* Multi Channel Payment Ingestion - Full Width */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        {/* Multi Channel Payment Ingestion */}
-        <Grid item xs={12} lg={8}>
+        <Grid item xs={12}>
           <MultiChannelChart data={multiChannelData} />
         </Grid>
+      </Grid>
 
-        {/* Fraud & Risk Intelligence */}
-        <Grid item xs={12} lg={4}>
-          <Box sx={{ height: '100%' }}>
+      {/* Fraud Radar (Left - Compact) with Right Section */}
+      <Grid container spacing={3} sx={{ mb: 4 }} alignItems="stretch">
+        {/* Left: Fraud Radar - Smaller */}
+        <Grid item xs={12} md={5}>
+          <Box sx={{ maxHeight: '350px' }}>
             <FraudRiskRadar data={fraudRiskData} />
           </Box>
         </Grid>
-      </Grid>
 
-      {/* Pre-Auth Tracking */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12}>
-          <PreAuthTrackingComponent data={preAuthTracking} />
-        </Grid>
-      </Grid>
+        {/* Right: Pre-Auth, Audit Score & Video in Unified Grid */}
+        <Grid item xs={12} md={7}>
+          <Grid container spacing={3} alignItems="stretch">
+            {/* Pre-Auth Tracking - Full Width */}
+            <Grid item xs={12}>
+              <PreAuthTrackingComponent data={preAuthTracking} />
+            </Grid>
 
-      {/* Bottom Row - Audit Score & Video */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={6}>
-          <AuditConfidenceScoreComponent data={auditScore} />
-        </Grid>
+            {/* Audit Score - Half Width */}
+            <Grid item xs={12} sm={6}>
+              <AuditConfidenceScoreComponent data={auditScore} />
+            </Grid>
 
-        <Grid item xs={12} md={6}>
-          <VideoSecurityOverlay />
+            {/* Video Security Overlay - Half Width */}
+            <Grid item xs={12} sm={6}>
+              <VideoSecurityOverlay />
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
 

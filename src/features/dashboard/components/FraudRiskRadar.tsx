@@ -44,7 +44,7 @@ export const FraudRiskRadar: React.FC<FraudRiskRadarProps> = ({ data }) => {
         }
       />
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={385}>
           <RadarChart data={data}>
             <PolarGrid stroke="#e0e0e0" />
             <PolarAngleAxis dataKey="category" tick={{ fontSize: 12 }} />

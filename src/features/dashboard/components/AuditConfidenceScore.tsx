@@ -37,7 +37,7 @@ export const AuditConfidenceScore: React.FC<AuditConfidenceScoreProps> = ({
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            height: 250,
+            height: 205,
           }}
         >
           <ResponsiveContainer width="100%" height="100%">
