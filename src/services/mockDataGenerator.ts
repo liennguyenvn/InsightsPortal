@@ -1,4 +1,4 @@
-import { DatasetMetadata, Filter } from '../types';
+import { FilterCondition } from '../types';
 
 export interface MockDataRow {
   [key: string]: any;
@@ -78,7 +78,7 @@ export const mockDataGenerator = {
   /**
    * Apply filters to mock data
    */
-  applyFilters(data: MockDataRow[], filters: Filter[]): MockDataRow[] {
+  applyFilters(data: MockDataRow[], filters: FilterCondition[]): MockDataRow[] {
     if (!filters || filters.length === 0) return data;
 
     return data.filter(row => {

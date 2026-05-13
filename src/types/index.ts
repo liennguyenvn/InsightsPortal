@@ -22,7 +22,7 @@ export interface DatasetMetadata {
 
 export interface FilterCondition {
   field: string;
-  operator: 'equals' | 'contains' | 'gt' | 'lt' | 'between' | 'in';
+  operator: 'equals' | 'contains' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in';
   value: any;
 }
 
