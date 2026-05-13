@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Container,
@@ -6,8 +6,8 @@ import {
   Paper,
   Typography,
   Button,
-  Stack,
-  Divider
+  Divider,
+  TextField
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -15,6 +15,7 @@ import { DatasetMetadata, WidgetConfig, ReportDesignerState } from '../../types'
 import { SchemaExplorer } from './SchemaExplorer';
 import { ConfigurationPanel } from './ConfigurationPanel';
 import { LivePreview } from './LivePreview';
+import { mockDataGenerator } from '../../services/mockDataGenerator';
 
 interface ReportDesignerProps {
   datasets: DatasetMetadata[];
@@ -29,6 +30,7 @@ export const ReportDesigner: React.FC<ReportDesignerProps> = ({
   onCancel,
   initialConfig
 }) => {
+  const [title, setTitle] = useState(initialConfig?.title || '');
   const [state, setState] = useState<ReportDesignerState>({
     selectedDimensions: initialConfig?.dimensions || [],
     selectedMeasures: initialConfig?.measures || [],
@@ -92,7 +94,7 @@ export const ReportDesigner: React.FC<ReportDesignerProps> = ({
     const config: WidgetConfig = {
       id: initialConfig?.id || `widget-${Date.now()}`,
       type: state.chartType,
-      title: initialConfig?.title || `New ${state.chartType} Report`,
+      title: title || `New ${state.chartType} Report`,
       datasetId: state.selectedDataset.id,
       dimensions: state.selectedDimensions,
       measures: state.selectedMeasures,
@@ -102,11 +104,32 @@ export const ReportDesigner: React.FC<ReportDesignerProps> = ({
     onSave?.(config);
   };
 
+  // Generate mock data based on selected dataset with filters applied
+  const mockData = useMemo(() => {
+    if (!state.selectedDataset) return [];
+
+    const rawData = mockDataGenerator.generateMockData(state.selectedDataset.id);
+    const filteredData = mockDataGenerator.applyFilters(rawData, state.filters);
+    return filteredData;
+  }, [state.selectedDataset, state.filters]);
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ mb: 3 }}>Report Designer</Typography>
-        <Divider />
+        <Typography variant="h4" sx={{ mb: 3 }}>
+          {initialConfig ? 'Edit Report' : 'Create New Report'}
+        </Typography>
+        <Divider sx={{ mb: 3 }} />
+
+        {/* Report Title Input */}
+        <TextField
+          label="Report Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Enter report title..."
+          fullWidth
+          sx={{ mb: 3 }}
+        />
       </Box>
 
       <Grid container spacing={3}>
@@ -128,6 +151,7 @@ export const ReportDesigner: React.FC<ReportDesignerProps> = ({
           <ConfigurationPanel
             chartType={state.chartType}
             filters={state.filters}
+            selectedDataset={state.selectedDataset}
             onChartTypeChange={handleChartTypeChange}
             onFilterAdd={handleFilterAdd}
             onFilterRemove={handleFilterRemove}
@@ -140,7 +164,7 @@ export const ReportDesigner: React.FC<ReportDesignerProps> = ({
             <Typography variant="h6" sx={{ mb: 2 }}>Live Preview</Typography>
             <LivePreview
               state={state}
-              data={generateMockData()}
+              data={mockData}
             />
           </Paper>
         </Grid>
@@ -166,11 +190,3 @@ export const ReportDesigner: React.FC<ReportDesignerProps> = ({
     </Container>
   );
 };
-
-function generateMockData() {
-  return Array.from({ length: 10 }, (_, i) => ({
-    name: `Category ${i + 1}`,
-    value: Math.floor(Math.random() * 1000),
-    count: Math.floor(Math.random() * 100)
-  }));
-}

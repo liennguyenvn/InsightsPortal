@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Box } from '@mui/material';
 import { ReportDesigner as ReportDesignerComponent } from '../components/designer';
 import { useWidgets } from '../features/dashboard/WidgetsContext';
@@ -55,13 +55,21 @@ export const ReportDesignerPage: React.FC<ReportDesignerPageProps> = ({
   onCancel
 }) => {
   const navigate = useNavigate();
-  const { addWidget } = useWidgets();
+  const location = useLocation();
+  const { addWidget, updateWidget } = useWidgets();
+
+  const editingWidget = (location.state as any)?.editingWidget;
 
   const handleSave = (config: WidgetConfig) => {
     console.log('Report saved:', config);
 
-    // Add widget to context/localStorage
-    addWidget(config);
+    if (editingWidget) {
+      // Update existing widget
+      updateWidget(config);
+    } else {
+      // Add new widget
+      addWidget(config);
+    }
 
     // Call parent callback if provided
     onSave?.(config);
@@ -84,6 +92,7 @@ export const ReportDesignerPage: React.FC<ReportDesignerPageProps> = ({
         datasets={MOCK_DATASETS}
         onSave={handleSave}
         onCancel={handleCancel}
+        initialConfig={editingWidget}
       />
     </Box>
   );

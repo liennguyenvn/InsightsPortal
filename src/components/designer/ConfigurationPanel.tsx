@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Paper,
   FormControl,
@@ -13,16 +13,19 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Stack
+  Stack,
+  Box
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { WidgetConfig, FilterCondition } from '../../types';
+import { WidgetConfig, FilterCondition, DatasetMetadata } from '../../types';
 import { WIDGET_REGISTRY } from '../../config/widget-registry';
+import { mockDataGenerator } from '../../services/mockDataGenerator';
 
 interface ConfigurationPanelProps {
   chartType: WidgetConfig['type'];
   filters: FilterCondition[];
+  selectedDataset?: DatasetMetadata;
   onChartTypeChange: (type: WidgetConfig['type']) => void;
   onFilterAdd: (filter: FilterCondition) => void;
   onFilterRemove: (index: number) => void;
@@ -31,6 +34,7 @@ interface ConfigurationPanelProps {
 export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
   chartType,
   filters,
+  selectedDataset,
   onChartTypeChange,
   onFilterAdd,
   onFilterRemove
@@ -42,8 +46,15 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
     value: ''
   });
 
+  // Get available values for the selected field
+  const availableValues = useMemo(() => {
+    if (!selectedDataset || !filterForm.field) return [];
+    return mockDataGenerator.getDimensionValues(selectedDataset.id, filterForm.field) ||
+           mockDataGenerator.getAvailableValues(selectedDataset.id, filterForm.field);
+  }, [selectedDataset, filterForm.field]);
+
   const handleAddFilter = () => {
-    if (filterForm.field && filterForm.value) {
+    if (filterForm.field && filterForm.value !== '') {
       onFilterAdd(filterForm);
       setFilterForm({ field: '', operator: 'equals', value: '' });
       setOpenFilterDialog(false);
@@ -109,19 +120,40 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
       ))}
 
       {/* Add Filter Dialog */}
-      <Dialog open={openFilterDialog} onClose={() => setOpenFilterDialog(false)}>
+      <Dialog open={openFilterDialog} onClose={() => setOpenFilterDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Add Filter</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              label="Field"
-              value={filterForm.field}
-              onChange={(e) => setFilterForm({ ...filterForm, field: e.target.value })}
-              fullWidth
-            />
-            <FormControl fullWidth>              
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>Operator</Typography>
+            {/* Field Selector */}
+            <FormControl fullWidth>
+              <InputLabel>Field</InputLabel>
               <Select
+                label="Field"
+                value={filterForm.field}
+                onChange={(e) => setFilterForm({ ...filterForm, field: e.target.value, value: '' })}
+              >
+                {selectedDataset && (
+                  <>
+                    {selectedDataset.dimensions?.map(dim => (
+                      <MenuItem key={`dim-${dim.id}`} value={dim.id}>
+                        {dim.name} (Dimension)
+                      </MenuItem>
+                    ))}
+                    {selectedDataset.measures?.map(measure => (
+                      <MenuItem key={`measure-${measure.id}`} value={measure.id}>
+                        {measure.name} (Measure)
+                      </MenuItem>
+                    ))}
+                  </>
+                )}
+              </Select>
+            </FormControl>
+
+            {/* Operator Selector */}
+            <FormControl fullWidth>
+              <InputLabel>Operator</InputLabel>
+              <Select
+                label="Operator"
                 value={filterForm.operator}
                 onChange={(e) => setFilterForm({ ...filterForm, operator: e.target.value as any })}
               >
@@ -129,21 +161,49 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
                 <MenuItem value="contains">Contains</MenuItem>
                 <MenuItem value="gt">Greater Than</MenuItem>
                 <MenuItem value="lt">Less Than</MenuItem>
+                <MenuItem value="gte">Greater or Equal</MenuItem>
+                <MenuItem value="lte">Less or Equal</MenuItem>
                 <MenuItem value="between">Between</MenuItem>
                 <MenuItem value="in">In List</MenuItem>
               </Select>
             </FormControl>
-            <TextField
-              label="Value"
-              value={filterForm.value}
-              onChange={(e) => setFilterForm({ ...filterForm, value: e.target.value })}
-              fullWidth
-            />
+
+            {/* Value Selector - Dropdown if values available, TextField otherwise */}
+            {availableValues.length > 0 ? (
+              <FormControl fullWidth>
+                <InputLabel>Value</InputLabel>
+                <Select
+                  label="Value"
+                  value={filterForm.value}
+                  onChange={(e) => setFilterForm({ ...filterForm, value: e.target.value })}
+                >
+                  {availableValues.map((val) => (
+                    <MenuItem key={`val-${val}`} value={val}>
+                      {val}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            ) : (
+              <TextField
+                label="Value"
+                value={filterForm.value}
+                onChange={(e) => setFilterForm({ ...filterForm, value: e.target.value })}
+                fullWidth
+                placeholder="Enter value manually"
+              />
+            )}
           </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenFilterDialog(false)}>Cancel</Button>
-          <Button onClick={handleAddFilter} variant="contained">Add</Button>
+          <Button
+            onClick={handleAddFilter}
+            variant="contained"
+            disabled={!filterForm.field || filterForm.value === ''}
+          >
+            Add Filter
+          </Button>
         </DialogActions>
       </Dialog>
     </Paper>

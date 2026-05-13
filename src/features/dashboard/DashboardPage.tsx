@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Grid, Box, CircularProgress, Typography, Divider, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
+import { mockDataGenerator } from '../../services/mockDataGenerator';
 import {
   KPIMetrics,
   MultiChannelDataPoint,
@@ -19,6 +20,7 @@ import { FraudRiskRadar } from './components/FraudRiskRadar';
 import { PreAuthTracking as PreAuthTrackingComponent } from './components/PreAuthTracking';
 import { AuditConfidenceScore as AuditConfidenceScoreComponent } from './components/AuditConfidenceScore';
 import { VideoSecurityOverlay } from './components/VideoSecurityOverlay';
+import { DashboardSummaryReport } from './components/DashboardSummaryReport';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -118,6 +120,13 @@ export const DashboardPage: React.FC = () => {
         </Grid>
       </Grid>
 
+      {/* Dashboard Summary Report from API */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12}>
+          <DashboardSummaryReport />
+        </Grid>
+      </Grid>
+
       {/* Custom Reports Section with Drag-Drop */}
       {widgets.length > 0 && (
         <Box sx={{ mt: 4 }}>
@@ -134,15 +143,26 @@ export const DashboardPage: React.FC = () => {
               gridLayout: gridLayout,
             }}
             widgetData={Object.fromEntries(
-              widgets.map((widget) => [
-                widget.id,
-                { data: generateMockData(), loading: false },
-              ])
+              widgets.map((widget) => {
+                // Generate mock data based on the widget's datasetId and apply filters
+                const rawData = mockDataGenerator.generateMockData(widget.datasetId);
+                const filteredData = mockDataGenerator.applyFilters(rawData, widget.filters);
+                return [
+                  widget.id,
+                  { data: filteredData, loading: false },
+                ];
+              })
             )}
             onLayoutChange={updateLayout}
             onAddWidget={() => navigate('/report-designer')}
             onRemoveWidget={(widgetId) => removeWidget(widgetId)}
-            onEditWidget={(widgetId) => console.log('Edit widget:', widgetId)}
+            onEditWidget={(widgetId) => {
+              const widget = widgets.find(w => w.id === widgetId);
+              if (widget) {
+                // Pass widget config to Report Designer for editing
+                navigate('/report-designer', { state: { editingWidget: widget } });
+              }
+            }}
             onRefreshWidget={(widgetId) => console.log('Refresh widget:', widgetId)}
           />
         </Box>
